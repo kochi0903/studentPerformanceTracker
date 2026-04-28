@@ -1,0 +1,181 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ─────────────────────────────────── */
+@layer base {
+  :root {
+    --font-display: 'Fira Code', monospace;
+    --font-body:    'Fira Sans', sans-serif;
+
+    --color-primary:    #6366F1;
+    --color-primary-dk: #4F46E5;
+    --color-secondary:  #818CF8;
+    --color-cta:        #10B981;
+    --color-cta-dk:     #059669;
+    --color-bg:         #F5F3FF;
+    --color-surface:    #FFFFFF;
+    --color-border:     #E5E7EB;
+    --color-text:       #1E1B4B;
+    --color-muted:      #6B7280;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+}
+
+/* ─── Component Classes ──────────────────────────────── */
+@layer components {
+
+  /* Cards */
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl;
+  }
+
+  .card-hover {
+    @apply card transition-colors duration-150 hover:border-indigo-300 hover:bg-indigo-50/30 cursor-pointer;
+  }
+
+  /* Stat cards */
+  .stat-card {
+    @apply bg-white border border-gray-200 rounded-xl p-6;
+    transition: border-color 150ms ease;
+  }
+
+  .stat-card:hover {
+    border-color: #6366F1;
+  }
+
+  /* Inputs */
+  .input-field {
+    @apply w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5
+           text-sm text-slate-900 placeholder:text-gray-400
+           focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+           transition-colors duration-150;
+    font-family: var(--font-body);
+  }
+
+  /* Primary button */
+  .btn-primary {
+    @apply bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800
+           text-white font-semibold text-sm rounded-lg px-5 py-2.5
+           cursor-pointer transition-colors duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed;
+    font-family: var(--font-body);
+  }
+
+  /* Ghost / secondary button */
+  .btn-ghost {
+    @apply bg-white hover:bg-gray-50 active:bg-gray-100
+           text-slate-700 font-semibold text-sm rounded-lg px-5 py-2.5
+           border border-gray-200 hover:border-gray-300
+           cursor-pointer transition-colors duration-150;
+    font-family: var(--font-body);
+  }
+
+  /* Danger button */
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 active:bg-red-800
+           text-white font-semibold text-sm rounded-lg px-5 py-2.5
+           cursor-pointer transition-colors duration-150;
+  }
+
+  /* Social / icon button */
+  .social-btn {
+    @apply flex items-center justify-center p-2.5 bg-white border border-gray-200
+           rounded-lg hover:bg-gray-50 hover:border-gray-300
+           cursor-pointer transition-colors duration-150;
+  }
+
+  /* Data table */
+  .data-table-container {
+    @apply bg-white border border-gray-200 rounded-xl overflow-hidden;
+  }
+
+  .data-table-header {
+    @apply bg-gray-50 border-b border-gray-200 px-6 py-3
+           flex items-center text-[11px] font-semibold text-gray-500
+           uppercase tracking-widest;
+    font-family: var(--font-display);
+  }
+
+  .data-table-row {
+    @apply px-6 py-4 flex items-center border-b border-gray-100
+           last:border-0 hover:bg-gray-50 transition-colors duration-150;
+  }
+
+  /* Tabs */
+  .tab-active {
+    @apply text-indigo-600 border-b-2 border-indigo-600 font-semibold;
+    font-family: var(--font-body);
+  }
+
+  /* Badge pills */
+  .badge-pill {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full
+           text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .badge-outstanding { @apply bg-emerald-100 text-emerald-700; }
+  .badge-good        { @apply bg-blue-100   text-blue-700;    }
+  .badge-average     { @apply bg-amber-100  text-amber-700;   }
+  .badge-support     { @apply bg-red-100    text-red-700;     }
+
+  /* Glass-card alias → flat card (keeps old class names working) */
+  .glass-card {
+    @apply bg-white border border-gray-200 rounded-xl;
+  }
+}
+
+/* ─── Sidebar link active state ──────────────────────── */
+.sidebar-link-active {
+  background-color: #EEF2FF;
+  color: #4F46E5;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 9999px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ─── Focus ring ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Utility: hide scrollbar ────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
