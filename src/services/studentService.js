@@ -11,6 +11,7 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase-config';
+import { serializeDoc } from '../utils/firestore';
 
 const STUDENTS_COLLECTION = 'students';
 const ENTRIES_COLLECTION = 'weeklyEntries';
@@ -64,7 +65,7 @@ export const studentService = {
       
       // Sort client-side by name
       return querySnapshot.docs
-        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .map(doc => serializeDoc({ id: doc.id, ...doc.data() }))
         .sort((a, b) => a.name.localeCompare(b.name));
     } catch (error) {
       console.error("Error fetching students:", error);
@@ -85,7 +86,7 @@ export const studentService = {
         orderBy('ratedAt', 'desc')
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => ({
+      return querySnapshot.docs.map(doc => serializeDoc({
         id: doc.id,
         ...doc.data()
       }));
@@ -99,8 +100,8 @@ export const studentService = {
         );
         const snapshot = await getDocs(simpleQ);
         return snapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => (b.week - a.week) || (b.ratedAt?.seconds - a.ratedAt?.seconds));
+          .map(doc => serializeDoc({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (b.week - a.week) || (new Date(b.ratedAt || 0) - new Date(a.ratedAt || 0)));
       }
       throw error;
     }

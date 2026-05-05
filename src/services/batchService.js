@@ -12,6 +12,7 @@ import {
   runTransaction
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase-config';
+import { serializeDoc } from '../utils/firestore';
 
 const BATCHES_COLLECTION = 'batches';
 
@@ -57,11 +58,11 @@ export const batchService = {
     
     // Filter and Sort client-side to bypass index requirements
     return querySnapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => serializeDoc({ id: doc.id, ...doc.data() }))
       .filter(batch => batch.isArchived !== true)
       .sort((a, b) => {
-        const dateA = a.createdAt?.toDate?.() || new Date(0);
-        const dateB = b.createdAt?.toDate?.() || new Date(0);
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
         return dateB - dateA; // Newest first
       });
   } catch (error) {
@@ -112,7 +113,7 @@ export const batchService = {
       const batchRef = doc(db, BATCHES_COLLECTION, batchId);
       const batchSnap = await getDoc(batchRef);
       if (batchSnap.exists()) {
-        return { id: batchSnap.id, ...batchSnap.data() };
+        return serializeDoc({ id: batchSnap.id, ...batchSnap.data() });
       }
       return null;
     } catch (error) {

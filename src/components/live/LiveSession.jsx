@@ -105,7 +105,7 @@ const LiveSession = () => {
       if (weekEntries.length === 0) return true; // No entry yet — always eligible
       // Sort descending by ratedAt to get the most recent rating
       const latest = weekEntries.sort(
-        (a, b) => (b.ratedAt?.seconds ?? 0) - (a.ratedAt?.seconds ?? 0)
+        (a, b) => new Date(b.ratedAt || 0) - new Date(a.ratedAt || 0)
       )[0];
       return !WHEEL_POP_RATINGS.includes(latest.rating);
     });
@@ -183,7 +183,7 @@ const LiveSession = () => {
         batchId: activeBatch.id,
         studentId: winner.id,
         week: activeBatch.currentWeek,
-        ratedAt: { seconds: Date.now() / 1000 } // Mock Firestore timestamp for local UI
+        ratedAt: new Date().toISOString() // Serialized timestamp for local UI
       };
       
       setEntries(prev => [newEntry, ...prev]);

@@ -9,6 +9,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../../firebase/firebase-config';
+import { serializeDoc } from '../utils/firestore';
 import { studentService } from './studentService';
 
 const SESSIONS_COLLECTION = 'sessions';
@@ -96,7 +97,7 @@ export const sessionService = {
     return onSnapshot(
       q,
       (snapshot) => {
-        const entries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const entries = snapshot.docs.map(d => serializeDoc({ id: d.id, ...d.data() }));
         callback(entries);
       },
       (error) => {

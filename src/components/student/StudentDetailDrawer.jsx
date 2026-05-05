@@ -63,8 +63,8 @@ const StudentDetailDrawer = ({ student, entries, isOpen, onClose }) => {
   if (!student) return null;
 
   const initials = student.name.split(' ').map(n => n[0]).join('').toUpperCase();
-  const enrolledDate = student.addedOn?.seconds
-    ? new Date(student.addedOn.seconds * 1000).toLocaleDateString()
+  const enrolledDate = student.addedOn
+    ? new Date(student.addedOn).toLocaleDateString()
     : 'Recently';
 
   return (
