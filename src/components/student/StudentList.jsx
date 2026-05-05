@@ -71,7 +71,8 @@ const StudentList = () => {
       currentRating: getCurrentRating(se, activeBatch?.currentWeek || 1),
       trend: computeTrend(se),
       flags: detectFlags(se),
-      lastRatedWeek: se.length > 0 ? se[se.length - 1].week : 'N/A',
+      // Show the last week they were rated; for new students show the current week
+      lastRatedWeek: se.length > 0 ? se[se.length - 1].week : (activeBatch?.currentWeek ?? '—'),
     };
   }), [students, entries, activeBatch]);
 

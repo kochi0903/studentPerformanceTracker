@@ -35,7 +35,18 @@ export const batchService = {
         createdAt: serverTimestamp(),
         schemaVersion: 1
       });
-      return { id: docRef.id, ...batchData };
+      // Return all fields so the Redux store is immediately consistent
+      // without requiring a refetch. createdAt uses Date.now() as a
+      // serializable stand-in (serverTimestamp() is a sentinel, not a value).
+      return {
+        id: docRef.id,
+        ...batchData,
+        ownerId,
+        currentWeek: 1,
+        isArchived: false,
+        createdAt: Date.now(),
+        schemaVersion: 1
+      };
     } catch (error) {
       console.error("Error creating batch:", error);
       throw error;

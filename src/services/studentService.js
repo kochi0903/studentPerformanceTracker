@@ -4,7 +4,6 @@ import {
   getDocs, 
   query, 
   where, 
-  orderBy, 
   doc, 
   updateDoc, 
   serverTimestamp,
@@ -79,30 +78,18 @@ export const studentService = {
    */
   getWeeklyEntries: async (batchId) => {
     try {
+      // Single-field query only — no composite index required.
+      // Sorting is handled client-side below.
       const q = query(
         collection(db, ENTRIES_COLLECTION),
-        where('batchId', '==', batchId),
-        orderBy('week', 'desc'),
-        orderBy('ratedAt', 'desc')
+        where('batchId', '==', batchId)
       );
       const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map(doc => serializeDoc({
-        id: doc.id,
-        ...doc.data()
-      }));
+      return querySnapshot.docs
+        .map(doc => serializeDoc({ id: doc.id, ...doc.data() }))
+        .sort((a, b) => (b.week - a.week) || (new Date(b.ratedAt || 0) - new Date(a.ratedAt || 0)));
     } catch (error) {
-      // If index is missing, we fall back to client-side sorting
-      if (error.code === 'failed-precondition') {
-        console.warn("Index missing for weeklyEntries query, falling back to simple query");
-        const simpleQ = query(
-          collection(db, ENTRIES_COLLECTION),
-          where('batchId', '==', batchId)
-        );
-        const snapshot = await getDocs(simpleQ);
-        return snapshot.docs
-          .map(doc => serializeDoc({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => (b.week - a.week) || (new Date(b.ratedAt || 0) - new Date(a.ratedAt || 0)));
-      }
+      console.error('Error fetching weekly entries:', error);
       throw error;
     }
   },
