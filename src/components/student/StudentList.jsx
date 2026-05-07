@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, Search, UserPlus, Loader2, Trash2, X,
   TrendingUp, TrendingDown, Star, AlertCircle, CheckCircle2,
-  Filter
+  Filter, Zap, ChevronDown,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { studentService } from '../../services/studentService';
@@ -14,6 +14,7 @@ import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
 import BulkAddModal from './BulkAddModal';
 import StudentDetailDrawer from './StudentDetailDrawer';
 import ConfirmationModal from '../common/ConfirmationModal';
+import ManualRatingModal from './ManualRatingModal';
 
 /* ── Metric chip ────────────────────────────────────── */
 const MetricChip = ({ icon: Icon, label, value, accent }) => (
@@ -43,12 +44,17 @@ const StudentList = () => {
   const [selectedIds, setSelectedIds] = useState([]);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [ratingStudent, setRatingStudent] = useState(null); // student being manually rated
+  const [viewingWeek, setViewingWeek] = useState(activeBatch?.currentWeek ?? 1);
   const searchInputRef = useRef(null);
 
   useEffect(() => {
-    if (activeBatch) loadData();
+    if (activeBatch) {
+      loadData();
+      setViewingWeek(activeBatch.currentWeek); // reset view to current week on batch change
+    }
     setSelectedIds([]);
-  }, [activeBatch]);
+  }, [activeBatch?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     dispatch(setLoading(true));
@@ -64,17 +70,26 @@ const StudentList = () => {
     }
   };
 
+  // availableWeeks = all weeks that have at least one entry, plus always the current week
+  const availableWeeks = useMemo(() => {
+    const fromEntries = [...new Set(entries.map(e => e.week))].filter(Boolean);
+    const withCurrent = activeBatch?.currentWeek
+      ? [...new Set([...fromEntries, activeBatch.currentWeek])]
+      : fromEntries;
+    return withCurrent.sort((a, b) => a - b);
+  }, [entries, activeBatch]);
+
   const studentStats = useMemo(() => students.map(s => {
     const se = entries.filter(e => e.studentId === s.id).sort((a, b) => a.week - b.week);
     return {
       ...s,
-      currentRating: getCurrentRating(se, activeBatch?.currentWeek || 1),
+      // currentRating uses viewingWeek so tabs + badge reflect the selected week
+      currentRating: getCurrentRating(se, viewingWeek),
       trend: computeTrend(se),
       flags: detectFlags(se),
-      // Show the last week they were rated; for new students show the current week
       lastRatedWeek: se.length > 0 ? se[se.length - 1].week : (activeBatch?.currentWeek ?? '—'),
     };
-  }), [students, entries, activeBatch]);
+  }), [students, entries, viewingWeek, activeBatch]);
 
   const filteredStudents = useMemo(() => studentStats.filter(s => {
     const matchesSearch = s.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -116,6 +131,11 @@ const StudentList = () => {
       setIsBulkDeleteOpen(false);
     } catch (err) { dispatch(setError(err.message)); }
     finally { dispatch(setLoading(false)); }
+  };
+
+  // When a new entry is saved via ManualRatingModal, append it to Redux entries
+  const handleManualRated = (newEntry) => {
+    dispatch(setEntries([newEntry, ...entries]));
   };
 
   useKeyboardShortcuts({
@@ -161,7 +181,19 @@ const StudentList = () => {
   return (
     <div className="p-6 md:p-8 max-w-[1400px] mx-auto w-full">
       <BulkAddModal isOpen={isBulkAddOpen} onClose={() => setIsBulkAddOpen(false)} batchId={activeBatch.id} />
-      <StudentDetailDrawer student={selectedStudent} entries={entries} isOpen={!!selectedStudent} onClose={() => setSelectedStudent(null)} />
+      <StudentDetailDrawer
+        student={selectedStudent} entries={entries} isOpen={!!selectedStudent}
+        onClose={() => setSelectedStudent(null)}
+        onRate={(s) => { setSelectedStudent(null); setRatingStudent(s); }}
+      />
+      <ManualRatingModal
+        student={ratingStudent}
+        batchId={activeBatch.id}
+        currentWeek={activeBatch.currentWeek}
+        isOpen={!!ratingStudent}
+        onClose={() => setRatingStudent(null)}
+        onRated={handleManualRated}
+      />
       <ConfirmationModal isOpen={!!studentToDelete} onClose={() => setStudentToDelete(null)} onConfirm={handleDeleteSingle}
         title="Delete Student?" message={`Remove ${studentToDelete?.name}?`} confirmLabel="Delete" type="danger" isLoading={studentLoading} />
       <ConfirmationModal isOpen={isBulkDeleteOpen} onClose={() => setIsBulkDeleteOpen(false)} onConfirm={handleDeleteBulk}
@@ -193,7 +225,7 @@ const StudentList = () => {
 
       {/* Table */}
       <div className="data-table-container mb-24">
-        {/* Tabs + Search */}
+        {/* Tabs + Search + Week selector */}
         <div className="px-5 pt-4 flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-gray-100">
           <div className="flex items-center gap-5 w-full lg:w-auto overflow-x-auto scrollbar-hide">
             {TABS.map(tab => {
@@ -217,14 +249,34 @@ const StudentList = () => {
               );
             })}
           </div>
-          <div className="relative w-full lg:w-80 group pb-3 lg:pb-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={14} />
-            <input
-              ref={searchInputRef} type="text"
-              placeholder="Search student… (/)"
-              className="input-field pl-9 py-2 text-xs"
-              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-            />
+
+          <div className="flex items-center gap-3 w-full lg:w-auto pb-3 lg:pb-0">
+            {/* Week selector */}
+            <div className="relative flex items-center">
+              <ChevronDown size={13} className="absolute left-2.5 text-gray-400 pointer-events-none" />
+              <select
+                value={viewingWeek}
+                onChange={e => setViewingWeek(Number(e.target.value))}
+                className="input-field pl-7 py-2 text-xs pr-4 cursor-pointer appearance-none"
+              >
+                {availableWeeks.map(w => (
+                  <option key={w} value={w}>
+                    Week {w}{w === activeBatch.currentWeek ? ' (current)' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Search */}
+            <div className="relative flex-1 lg:w-64 group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={14} />
+              <input
+                ref={searchInputRef} type="text"
+                placeholder="Search student… (/)"
+                className="input-field pl-9 py-2 text-xs"
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -236,10 +288,10 @@ const StudentList = () => {
               onChange={handleSelectAll} />
           </div>
           <div className="flex-1">Student</div>
-          <div className="w-36">Rating</div>
+          <div className="w-36">Rating <span className="text-indigo-400 font-medium">(Wk {viewingWeek})</span></div>
           <div className="w-28">Trend</div>
-          <div className="w-20">Week</div>
-          <div className="w-12 text-right">—</div>
+          <div className="w-20">Last Rated</div>
+          <div className="w-20 text-right">Actions</div>
         </div>
 
         {/* Table body */}
@@ -285,9 +337,18 @@ const StudentList = () => {
                       Wk {student.lastRatedWeek}
                     </span>
                   </div>
-                  <div className="w-12 text-right" onClick={e => e.stopPropagation()}>
+                  <div className="w-20 flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                    {/* Manual rate button */}
+                    <button
+                      onClick={() => setRatingStudent(student)}
+                      title="Rate manually"
+                      className="p-1.5 text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
+                    >
+                      <Zap size={14} />
+                    </button>
                     <button
                       onClick={() => setStudentToDelete(student)}
+                      title="Delete student"
                       className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 cursor-pointer"
                     >
                       <Trash2 size={14} />

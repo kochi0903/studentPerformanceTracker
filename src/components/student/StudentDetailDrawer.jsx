@@ -53,7 +53,7 @@ const DrawerSection = ({ icon: Icon, title, children }) => (
 );
 
 /* ── Main component ─────────────────────────────────── */
-const StudentDetailDrawer = ({ student, entries, isOpen, onClose }) => {
+const StudentDetailDrawer = ({ student, entries, isOpen, onClose, onRate }) => {
   const studentEntries = useMemo(() => {
     return entries
       .filter(e => e.studentId === student?.id)
@@ -166,7 +166,10 @@ const StudentDetailDrawer = ({ student, entries, isOpen, onClose }) => {
               <button className="btn-ghost flex-1 flex items-center justify-center gap-2">
                 <History size={15} /> Full History
               </button>
-              <button className="btn-primary flex-1 flex items-center justify-center gap-2">
+              <button
+                onClick={() => onRate?.(student)}
+                className="btn-primary flex-1 flex items-center justify-center gap-2"
+              >
                 <Zap size={15} /> Rate Now
               </button>
             </div>
