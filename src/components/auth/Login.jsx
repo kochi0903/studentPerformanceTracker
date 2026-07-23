@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2 } from "lucide-react";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../../../firebase/firebase-config";
+import { auth, db, googleProvider } from "../../../firebase/firebase-config";
 import { setUser, setLoading, setError } from "../../store/authSlice";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -19,7 +20,27 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const u = result.user;
-      dispatch(setUser({ uid: u.uid, email: u.email, name: u.displayName, photoURL: u.photoURL }));
+      const profileRef = doc(db, "users", u.uid);
+      const profileDoc = await getDoc(profileRef);
+      const profile = profileDoc.exists() ? profileDoc.data() : null;
+      if (!profileDoc.exists()) {
+        await setDoc(profileRef, {
+          role: "trainer",
+          name: u.displayName || u.email,
+          email: u.email,
+          createdAt: new Date().toISOString(),
+        });
+      }
+      dispatch(
+        setUser({
+          uid: u.uid,
+          email: u.email,
+          name: u.displayName,
+          photoURL: u.photoURL,
+          role: profile?.role || "trainer",
+          profile: profile || null,
+        }),
+      );
       navigate("/");
     } catch (err) {
       dispatch(setError(err.message));
@@ -32,7 +53,18 @@ const Login = () => {
     try {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const u = result.user;
-      dispatch(setUser({ uid: u.uid, email: u.email, name: u.displayName }));
+      const profileRef = doc(db, "users", u.uid);
+      const profileDoc = await getDoc(profileRef);
+      const profile = profileDoc.exists() ? profileDoc.data() : null;
+      dispatch(
+        setUser({
+          uid: u.uid,
+          email: u.email,
+          name: u.displayName,
+          role: profile?.role || "trainer",
+          profile,
+        }),
+      );
       navigate("/");
     } catch (err) {
       dispatch(setError(err.message));
@@ -42,13 +74,15 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-[#F5F3FF] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-
         {/* Brand */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center mb-4">
             <CheckCircle2 className="text-white" size={20} />
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-1" style={{ fontFamily: "var(--font-display)" }}>
+          <h1
+            className="text-xl font-semibold text-gray-900 mb-1"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
             Welcome back
           </h1>
           <p className="text-sm text-gray-500">Sign in to your dashboard</p>
@@ -56,7 +90,6 @@ const Login = () => {
 
         {/* Card */}
         <div className="card p-6 shadow-sm">
-
           {/* Google */}
           <button
             onClick={handleGoogleLogin}
@@ -65,7 +98,8 @@ const Login = () => {
           >
             <img
               src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-              alt="Google" className="w-4 h-4"
+              alt="Google"
+              className="w-4 h-4"
             />
             Continue with Google
           </button>
@@ -76,7 +110,9 @@ const Login = () => {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-xs text-gray-400 font-medium">or email</span>
+              <span className="bg-white px-3 text-xs text-gray-400 font-medium">
+                or email
+              </span>
             </div>
           </div>
 
@@ -87,30 +123,45 @@ const Login = () => {
                 Email
               </label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={15} />
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors"
+                  size={15}
+                />
                 <input
-                  type="email" required
+                  type="email"
+                  required
                   className="input-field pl-9"
                   placeholder="name@company.com"
-                  value={email} onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Password</label>
-                <Link to="/forgot" className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors font-medium">
+                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Password
+                </label>
+                <Link
+                  to="/forgot"
+                  className="text-xs text-indigo-600 hover:text-indigo-800 transition-colors font-medium"
+                >
                   Forgot?
                 </Link>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" size={15} />
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors"
+                  size={15}
+                />
                 <input
-                  type={showPassword ? "text" : "password"} required
+                  type={showPassword ? "text" : "password"}
+                  required
                   className="input-field pl-9 pr-10"
                   placeholder="••••••••"
-                  value={password} onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -128,15 +179,26 @@ const Login = () => {
               </div>
             )}
 
-            <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-              {loading ? <Loader2 className="animate-spin" size={16} /> : "Sign in"}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin" size={16} />
+              ) : (
+                "Sign in"
+              )}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-5">
           New here?{" "}
-          <Link to="/signup" className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors">
+          <Link
+            to="/signup"
+            className="text-indigo-600 font-medium hover:text-indigo-800 transition-colors"
+          >
             Create account
           </Link>
         </p>

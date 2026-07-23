@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 import batchReducer from './batchSlice';
 import studentReducer from './studentSlice';
+import settingsReducer from './settingsSlice';
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     batch: batchReducer,
     student: studentReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
