@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -14,16 +14,16 @@ import {
   Keyboard,
   ChevronRight,
   Plus,
-} from 'lucide-react';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../../firebase/firebase-config';
-import { logout } from '../../store/authSlice';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import KeyboardShortcutsHelp from '../common/KeyboardShortcutsHelp';
-import CreateBatchModal from '../batch/CreateBatchModal';
-import { batchService } from '../../services/batchService';
-import { setBatches, setLoading, setError } from '../../store/batchSlice';
+} from "lucide-react";
+import { signOut } from "firebase/auth";
+import { auth } from "../../../firebase/firebase-config";
+import { logout } from "../../store/authSlice";
+import { motion, AnimatePresence } from "framer-motion";
+import { useKeyboardShortcuts } from "../../hooks/useKeyboardShortcuts";
+import KeyboardShortcutsHelp from "../common/KeyboardShortcutsHelp";
+import CreateBatchModal from "../batch/CreateBatchModal";
+import { batchService } from "../../services/batchService";
+import { setBatches, setLoading, setError } from "../../store/batchSlice";
 
 /* ── Sidebar navigation link ─────────────────────────── */
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => {
@@ -36,21 +36,27 @@ const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => {
       onClick={onClick}
       className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors duration-150 group ${
         isActive
-          ? 'bg-indigo-50 text-indigo-700'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+          ? "bg-indigo-50 text-indigo-700"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
       }`}
     >
       <div className="flex items-center gap-3">
         <Icon
           size={18}
-          className={isActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600 transition-colors'}
+          className={
+            isActive
+              ? "text-indigo-600"
+              : "text-gray-400 group-hover:text-gray-600 transition-colors"
+          }
         />
         <span className="text-sm font-medium">{label}</span>
       </div>
       {badge && (
         <span
           className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-            isActive ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'
+            isActive
+              ? "bg-indigo-100 text-indigo-700"
+              : "bg-gray-100 text-gray-500"
           }`}
         >
           {badge}
@@ -73,39 +79,58 @@ const ActiveBatchCard = ({ activeBatch, onNavigate }) => (
       <div className="flex items-center gap-2.5 min-w-0">
         <div
           className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${
-            activeBatch ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-400'
+            activeBatch
+              ? "bg-indigo-600 text-white"
+              : "bg-gray-100 text-gray-400"
           }`}
         >
           <Layers size={14} />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 truncate">
-            {activeBatch ? activeBatch.name : 'None selected'}
+            {activeBatch ? activeBatch.name : "None selected"}
           </p>
           {activeBatch && (
-            <p className="text-[11px] text-gray-500">Week {activeBatch.currentWeek}</p>
+            <p className="text-[11px] text-gray-500">
+              Week {activeBatch.currentWeek}
+            </p>
           )}
         </div>
       </div>
-      <ChevronRight size={14} className="text-gray-300 group-hover:text-indigo-400 transition-colors flex-shrink-0" />
+      <ChevronRight
+        size={14}
+        className="text-gray-300 group-hover:text-indigo-400 transition-colors flex-shrink-0"
+      />
     </div>
   </button>
 );
 
 /* ── Sidebar content (shared desktop + mobile) ───────── */
-const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCreateBatch, onHelp, onSignOut }) => (
+const SidebarContent = ({
+  user,
+  activeBatch,
+  onNavigate,
+  closeMobileMenu,
+  onCreateBatch,
+  onHelp,
+  onSignOut,
+}) => (
   <div className="flex flex-col h-full">
-
     {/* Logo */}
     <div className="px-4 py-5 flex items-center gap-3 border-b border-gray-100">
       <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
         <CheckCircle2 className="text-white" size={16} />
       </div>
       <div>
-        <h1 className="text-sm font-semibold text-gray-900 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
+        <h1
+          className="text-sm font-semibold text-gray-900 leading-tight"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
           Antigravity
         </h1>
-        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">Tracker</p>
+        <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">
+          Tracker
+        </p>
       </div>
     </div>
 
@@ -113,7 +138,10 @@ const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCrea
     <div className="px-4 py-4 border-b border-gray-100">
       <ActiveBatchCard
         activeBatch={activeBatch}
-        onNavigate={() => { onNavigate('/batches'); closeMobileMenu(); }}
+        onNavigate={() => {
+          onNavigate("/batches");
+          closeMobileMenu();
+        }}
       />
     </div>
 
@@ -124,9 +152,24 @@ const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCrea
           Workspace
         </p>
         <div className="space-y-0.5">
-          <SidebarLink to="/"         icon={LayoutDashboard} label="Dashboard"    onClick={closeMobileMenu} />
-          <SidebarLink to="/batches"  icon={Layers}          label="My Batches"   onClick={closeMobileMenu} />
-          <SidebarLink to="/students" icon={Users}           label="Students"     onClick={closeMobileMenu} />
+          <SidebarLink
+            to="/"
+            icon={LayoutDashboard}
+            label="Dashboard"
+            onClick={closeMobileMenu}
+          />
+          <SidebarLink
+            to="/batches"
+            icon={Layers}
+            label="My Batches"
+            onClick={closeMobileMenu}
+          />
+          <SidebarLink
+            to="/students"
+            icon={Users}
+            label="Students"
+            onClick={closeMobileMenu}
+          />
         </div>
       </div>
 
@@ -135,7 +178,12 @@ const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCrea
           Management
         </p>
         <div className="space-y-0.5">
-          <SidebarLink to="/settings" icon={Settings} label="Settings" onClick={closeMobileMenu} />
+          <SidebarLink
+            to="/settings"
+            icon={Settings}
+            label="Settings"
+            onClick={closeMobileMenu}
+          />
           <button
             onClick={onCreateBatch}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors duration-150 cursor-pointer"
@@ -153,18 +201,25 @@ const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCrea
         onClick={onHelp}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors duration-150 cursor-pointer group"
       >
-        <Keyboard size={16} className="text-gray-400 group-hover:text-gray-600 transition-colors" />
+        <Keyboard
+          size={16}
+          className="text-gray-400 group-hover:text-gray-600 transition-colors"
+        />
         <span className="text-sm font-medium flex-1 text-left">Shortcuts</span>
-        <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-semibold text-gray-500">?</kbd>
+        <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-200 rounded text-[10px] font-semibold text-gray-500">
+          ?
+        </kbd>
       </button>
 
       {/* User row */}
       <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg">
         <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
-          {user?.name?.[0] || 'T'}
+          {user?.name?.[0] || "T"}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-900 truncate">{user?.name || 'Trainer'}</p>
+          <p className="text-xs font-semibold text-gray-900 truncate">
+            {user?.name || "Trainer"}
+          </p>
           <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
         </div>
       </div>
@@ -173,7 +228,10 @@ const SidebarContent = ({ user, activeBatch, onNavigate, closeMobileMenu, onCrea
         onClick={onSignOut}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors duration-150 cursor-pointer group"
       >
-        <LogOut size={16} className="text-red-400 group-hover:text-red-500 transition-colors" />
+        <LogOut
+          size={16}
+          className="text-red-400 group-hover:text-red-500 transition-colors"
+        />
         <span className="text-sm font-medium">Sign Out</span>
       </button>
     </div>
@@ -197,7 +255,7 @@ const AppLayout = ({ children, theaterMode = false }) => {
       const fetchBatches = async () => {
         dispatch(setLoading(true));
         try {
-          const data = await batchService.getBatches(user.uid);
+          const data = await batchService.getBatches(user);
           dispatch(setBatches(data));
         } catch (err) {
           dispatch(setError(err.message));
@@ -211,30 +269,38 @@ const AppLayout = ({ children, theaterMode = false }) => {
     try {
       await signOut(auth);
       dispatch(logout());
-      navigate('/login');
+      navigate("/login");
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error("Sign out error:", error);
     }
   };
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   useKeyboardShortcuts({
-    '?':      () => setIsHelpOpen(true),
-    Escape:   () => { setIsHelpOpen(false); setIsMobileMenuOpen(false); },
-    d:        () => !theaterMode && navigate('/'),
-    b:        () => !theaterMode && navigate('/batches'),
-    s:        () => !theaterMode && navigate('/students'),
-    l:        () => !theaterMode && navigate('/sessions'),
+    "?": () => setIsHelpOpen(true),
+    Escape: () => {
+      setIsHelpOpen(false);
+      setIsMobileMenuOpen(false);
+    },
+    d: () => !theaterMode && navigate("/"),
+    b: () => !theaterMode && navigate("/batches"),
+    s: () => !theaterMode && navigate("/students"),
+    l: () => !theaterMode && navigate("/sessions"),
   });
 
   if (theaterMode) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] overflow-hidden relative">
-        <KeyboardShortcutsHelp isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-        <main className="h-screen w-full overflow-hidden relative">{children}</main>
+        <KeyboardShortcutsHelp
+          isOpen={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+        />
+        <main className="h-screen w-full overflow-hidden relative">
+          {children}
+        </main>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="fixed top-5 right-5 p-2.5 bg-white/10 hover:bg-white/20 text-white/40 hover:text-white rounded-lg transition-colors duration-150 z-[100] cursor-pointer"
           title="Exit Session"
         >
@@ -256,8 +322,14 @@ const AppLayout = ({ children, theaterMode = false }) => {
 
   return (
     <div className="flex min-h-screen bg-[#F5F3FF]">
-      <KeyboardShortcutsHelp isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      <CreateBatchModal isOpen={isCreateBatchOpen} onClose={() => setIsCreateBatchOpen(false)} />
+      <KeyboardShortcutsHelp
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
+      <CreateBatchModal
+        isOpen={isCreateBatchOpen}
+        onClose={() => setIsCreateBatchOpen(false)}
+      />
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex w-64 border-r border-gray-200 bg-white flex-col sticky top-0 h-screen">
@@ -276,10 +348,10 @@ const AppLayout = ({ children, theaterMode = false }) => {
               className="fixed inset-0 bg-gray-900/40 z-40 lg:hidden"
             />
             <motion.aside
-              initial={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.2 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.2 }}
               className="fixed top-0 left-0 bottom-0 w-64 bg-white z-50 lg:hidden flex flex-col border-r border-gray-200"
             >
               <button
@@ -302,7 +374,10 @@ const AppLayout = ({ children, theaterMode = false }) => {
             <div className="w-7 h-7 bg-indigo-600 rounded-lg flex items-center justify-center">
               <CheckCircle2 className="text-white" size={14} />
             </div>
-            <h1 className="text-sm font-semibold text-gray-900" style={{ fontFamily: 'var(--font-display)' }}>
+            <h1
+              className="text-sm font-semibold text-gray-900"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               Antigravity
             </h1>
           </div>
@@ -315,9 +390,7 @@ const AppLayout = ({ children, theaterMode = false }) => {
         </header>
 
         <main className="flex-1 overflow-auto">
-          <div className="max-w-[1600px] mx-auto">
-            {children}
-          </div>
+          <div className="max-w-[1600px] mx-auto">{children}</div>
         </main>
       </div>
     </div>

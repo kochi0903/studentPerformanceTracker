@@ -19,6 +19,7 @@ import BatchList from "./components/batch/BatchList";
 import StudentList from "./components/student/StudentList";
 import LiveSession from "./components/live/LiveSession";
 import SettingsPage from "./components/settings/SettingsPage";
+import AttendancePage from "./components/batch/AttendancePage";
 import { Loader2 } from "lucide-react";
 
 const FullPageLoader = () => (
@@ -104,6 +105,14 @@ function App() {
           element={
             <ProtectedRoute>
               <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance/:batchId"
+          element={
+            <ProtectedRoute>
+              <AttendancePage />
             </ProtectedRoute>
           }
         />
